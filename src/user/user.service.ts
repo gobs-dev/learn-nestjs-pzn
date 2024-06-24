@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { User, Prisma } from '@prisma/client';
+import { ValidationService } from 'src/validation/validation.service';
+import { z } from 'zod';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private validation: ValidationService,
+  ) {}
 
   async user(
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
@@ -32,6 +37,11 @@ export class UserService {
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
+    const schema = z.object({
+      name: z.string().optional(),
+      email: z.string().email(),
+    });
+    this.validation.validate(data, schema);
     return this.prisma.user.create({
       data,
     });

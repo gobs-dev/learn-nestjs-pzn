@@ -1,34 +1,51 @@
 import {
   Controller,
   Get,
-  Header,
   Param,
   Query,
-  HttpCode,
   Redirect,
   HttpRedirectResponse,
   Res,
   Req,
+  Inject,
+  Post,
+  Body,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UserService } from './user.service';
+import { Logger } from 'winston';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { User as UserModel } from '@prisma/client';
 
 @Controller('/api/user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
-  // @Get()
-  // @Header('Content-Type', 'application/json')
-  // @HttpCode(200)
-  // getUser(@Query('name') name: string) {
-  //   return this.userService.getUser(name);
-  // }
+  @Post('/create')
+  async signupUser(
+    @Body() userData: { name?: string; email: string },
+  ): Promise<UserModel> {
+    return this.userService.createUser(userData);
+  }
+
+  @Get('/log')
+  log(@Query('message') mesage: string): HttpRedirectResponse {
+    this.logger.info(`Logging ${mesage}`);
+    return {
+      url: `Logging ${mesage}`,
+      statusCode: 200,
+    };
+  }
 
   @Get('/redirect')
   @Redirect()
   redirect(): HttpRedirectResponse {
+    this.logger.info('Redirecting to /api/user/123?name=John');
     return {
-      url: '/api/user',
+      url: '/api/user/123?name=John',
       statusCode: 301,
     };
   }
