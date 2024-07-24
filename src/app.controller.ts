@@ -30,6 +30,11 @@ export class AppController {
     });
   }
 
+  @Get('test')
+  async test(): Promise<string> {
+    return 'test';
+  }
+
   @Get('filtered-posts/:searchString')
   async getFilteredPosts(
     @Param('searchString') searchString: string,
